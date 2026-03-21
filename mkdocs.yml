@@ -1,0 +1,21 @@
+site_name: Industrial Edge Labs Architecture
+site_description: Technical manual detailing the ZeroMQ interactions of 13 Hard Real-Time nodes.
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: black
+    accent: deep orange
+markdown_extensions:
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Overview: index.md
