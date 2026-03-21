@@ -92,7 +92,7 @@ If the upstream producer sends a geometry that does not match the configured ing
 
 ## Build Strategy
 
-The runtime is designed to compile without forcing CUDA or OpenCV when those libraries are not yet needed by the active code path.
+The runtime is designed to compile out of the box in standalone fallback mode, without forcing ZeroMQ, CUDA, or OpenCV when those libraries are not yet needed by the active code path.
 
 ```mermaid
 flowchart TD
