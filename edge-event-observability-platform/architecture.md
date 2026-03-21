@@ -49,7 +49,7 @@ The observability node subscribes to the 40-byte `InspectionAnomalyPayload` prod
 ### Exported Surfaces
 
 - `/metrics`: Prometheus exposition for state counts, anomaly counts, current state, and last anomaly data.
-- `/api/v1/telemetry/snapshot`: current runtime snapshot serialized as JSON for non-hot-path consumers.
+- `/api/v1/telemetry/snapshot`: current runtime snapshot serialized as JSON for non-hot-path consumers, with 64-bit counters and timestamps encoded as strings.
 - `/healthz`: process liveness check.
 
 ## Operational Notes

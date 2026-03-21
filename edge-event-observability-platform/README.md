@@ -32,6 +32,7 @@ This node is the passive telemetry gateway of the Industrial Edge Labs runtime. 
 - `GET /healthz`
 - `GET /metrics`
 - `GET /api/v1/telemetry/snapshot`
+- 64-bit counters and timestamps are serialized as strings in the JSON snapshot to preserve precision in JavaScript clients.
 
 ## Runtime Modes
 
