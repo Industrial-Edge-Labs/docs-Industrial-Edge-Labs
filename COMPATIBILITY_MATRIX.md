@@ -33,7 +33,7 @@ This document defines the intended upstream and downstream compatibility contrac
 2. `InferencePayload`: `timestamp`, `object_id`, `confidence`, `x`, `y`, `dx`, `dy`
 3. `InspectionAnomalyPayload`: `timestamp_ns`, `frame_id`, `confidence`, `x`, `y`, `width`, `height`, `class_id`
 4. `FsmPayload`: `timestamp`, `current_state`
-5. `ControlConfig`: control-plane-to-orchestrator configuration block
+5. `ControlConfig`: `max_velocity_rad`, `min_vision_confidence`, `tick_budget_us`, `emergency_stop`, `reserved[3]`, `profile_revision`
 
 ## Working Rule
 

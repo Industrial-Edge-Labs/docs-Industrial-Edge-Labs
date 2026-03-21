@@ -15,9 +15,9 @@ flowchart TD
     end
 
     subgraph INFER ["2. Cognitive & Decision Layer (Rust / C++)"]
-        VPE -- "FlatBuffers / ZeroMQ" --> RTD[real-time-vision-decision-system]
-        VIE -- "Protobuf / gRPC" --> RTD
-        RTD -- "State Machine Transitions" --> ORCH{edge-ai-system-orchestrator}
+        VPE -- "InferencePayload / ZeroMQ" --> RTD[real-time-vision-decision-system]
+        VIE -- "InspectionAnomalyPayload / ZeroMQ" --> RTD
+        RTD -- "FsmPayload / ZeroMQ" --> ORCH{edge-ai-system-orchestrator}
     end
 
     subgraph ACT_SIM ["3. Physical & Simulation Layer (C++ / CUDA)"]
@@ -33,6 +33,7 @@ flowchart TD
     subgraph CONTROL_PLANE ["5. Visualization & Fleet Layer (React / WebGL)"]
         EOP -- "WebSockets (60Hz)" --> TWIN[industrial-digital-twin-dashboard]
         EOP -- "REST API" --> VOCP[vision-operations-control-plane]
+        VOCP -- "ControlConfig / ZeroMQ REQ-REP" --> ORCH
         VOCP -- "Zero-Trust TLS / OTA" --> FLEET[edge-device-fleet-manager]
     end
     
@@ -53,7 +54,7 @@ flowchart TD
 
 ### 2.2 The Deterministic Core
 - **[`real-time-vision-decision-system`](https://github.com/Industrial-Edge-Labs/real-time-vision-decision-system)**: Takes semantic output from the perception graphs and evaluates Hard-Real-Time (HRT) logic maps. It uses an internal finite state machine (FSM). Node-specific documentation: [real-time-vision-decision-system/architecture.md](./real-time-vision-decision-system/architecture.md).
-- **`edge-ai-system-orchestrator`**: The monolithic orchestrator. Implemented using CPU pinning, thread isolation, and bypasses kernel networking (via DPDK) where possible to maintain standard deviations of latency under $10\mu s$.
+- **[`edge-ai-system-orchestrator`](https://github.com/Industrial-Edge-Labs/edge-ai-system-orchestrator)**: The monolithic orchestrator. Implemented using CPU pinning, thread isolation, and deterministic control-profile handling. Node-specific documentation: [edge-ai-system-orchestrator/architecture.md](./edge-ai-system-orchestrator/architecture.md).
 
 ### 2.3 The Infrastructure, Feedback & WebGL Systems
 - **`edge-event-observability-platform`**: Time-series database optimized for high-write-throughput (LSM trees). Captures everything from application-level events to PCIe bus latency spikes.
