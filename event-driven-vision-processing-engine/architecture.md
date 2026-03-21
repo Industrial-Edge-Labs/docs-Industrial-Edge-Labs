@@ -1,14 +1,16 @@
 # Event-Driven Vision Processing Engine
 
-## Purpose
+## Scope
 
-Este nodo convierte una corriente de video densa en un flujo esparso de eventos geométricos. La meta no es inferir sobre cada frame completo, sino activar el pipeline de decisión solo cuando la energía temporal de la escena supera un umbral útil.
+This document describes the external architecture of the [event-driven-vision-processing-engine](https://github.com/Industrial-Edge-Labs/event-driven-vision-processing-engine) repository inside the [docs-Industrial-Edge-Labs](https://github.com/Industrial-Edge-Labs/docs-Industrial-Edge-Labs) repository.
 
-En otras palabras:
+The node transforms dense video ingress into sparse motion events so that downstream deterministic systems can react without evaluating every full frame.
 
-- Entrada: video continuo o envelopes de frames desde `low-latency-video-stream-orchestrator`.
-- Transformación: estimación de actividad temporal similar a `|dI/dt|`.
-- Salida: eventos binarios pequeños, listos para `real-time-vision-decision-system`.
+## Repository Interfaces
+
+- Upstream producer: [low-latency-video-stream-orchestrator](https://github.com/Industrial-Edge-Labs/low-latency-video-stream-orchestrator)
+- Downstream consumer: [real-time-vision-decision-system](https://github.com/Industrial-Edge-Labs/real-time-vision-decision-system)
+- Local implementation: [event-driven-vision-processing-engine](https://github.com/Industrial-Edge-Labs/event-driven-vision-processing-engine)
 
 ## Operational Flow
 
@@ -22,7 +24,7 @@ flowchart LR
     EVENT -->|tcp://127.0.0.1:5555| RTD[Real-Time Vision Decision System]
 ```
 
-## Internal Stages
+## Execution Stages
 
 ```mermaid
 sequenceDiagram
@@ -33,10 +35,10 @@ sequenceDiagram
     participant Bus as Decision Bus
 
     loop Continuous execution
-        Upstream->>Engine: Frame envelope or synthetic fallback
-        Engine->>Gate: Compute temporal energy proxy
+        Upstream->>Engine: Frame envelope or deterministic fallback ingest
+        Engine->>Gate: Compute temporal-energy score
         alt Score below threshold
-            Gate-->>Engine: Keep frame local only
+            Gate-->>Engine: Keep the sample local
         else Score above threshold
             Gate-->>Engine: Emit sparse event
             Engine->>Bus: Binary inference payload
@@ -46,14 +48,14 @@ sequenceDiagram
 
 ## Current Runtime Model
 
-La implementación actual no pretende ser todavía el kernel CUDA final. En esta etapa hace cuatro cosas importantes:
+The current implementation is intentionally split into two execution modes:
 
-1. Permite ingestión real por ZeroMQ si el nodo `#3` está activo.
-2. Mantiene un modo sintético para que el módulo pueda probarse solo.
-3. Genera timestamps reales y `object_id` monotónicos, evitando payloads falsos constantes.
-4. Conserva un contrato binario pequeño para no meter JSON en el hot path.
+1. Integrated mode, where the node consumes upstream frame envelopes over ZeroMQ and publishes events to the decision layer.
+2. Portable fallback mode, where the node keeps running deterministically even if the upstream video orchestrator is offline.
 
-## Binary Message Contract
+This keeps the node testable on a standalone workstation while preserving the same message contract used for integration.
+
+## Binary Event Contract
 
 ```mermaid
 classDiagram
@@ -68,31 +70,35 @@ classDiagram
     }
 ```
 
-### Field Meaning
+### Field Semantics
 
-- `timestamp_ns`: marca temporal monotónica del evento emitido.
-- `object_id`: identificador incremental del objeto/evento observado.
-- `confidence`: puntuación normalizada del detector temporal.
-- `x`, `y`: localización espacial resumida del evento.
-- `dx`, `dy`: desplazamiento o tendencia de movimiento.
+- `timestamp_ns`: monotonic event timestamp.
+- `object_id`: monotonically increasing identifier for the emitted sparse event.
+- `confidence`: normalized event confidence in the `[0, 1)` range.
+- `x`, `y`: compact spatial location of the event.
+- `dx`, `dy`: compact motion trend of the event.
 
-## Why Synthetic Fallback Exists
+## Upstream Envelope Contract
 
-El proyecto completo tiene dependencias cruzadas. Si `low-latency-video-stream-orchestrator` aún no está levantado, este nodo no debería quedar inutilizable. Por eso conserva un modo sintético:
+The current runtime expects a compact upstream frame envelope with:
 
-- ayuda a depurar el bus ZeroMQ hacia `#2`,
-- permite probar latencia y contratos de mensajes,
-- reduce el costo de validar el nodo por separado.
+- `timestamp`
+- `frame_id`
+- `width`
+- `height`
+- `channels`
+
+If the upstream producer sends a geometry that does not match the configured ingest shape, the envelope is dropped instead of being forwarded into the event path. This keeps the hot path deterministic and avoids accidental drift between [low-latency-video-stream-orchestrator](https://github.com/Industrial-Edge-Labs/low-latency-video-stream-orchestrator) and [event-driven-vision-processing-engine](https://github.com/Industrial-Edge-Labs/event-driven-vision-processing-engine).
 
 ## Build Strategy
 
-El `CMake` del módulo ahora separa dependencias opcionales de dependencias realmente usadas por el código actual.
+The runtime is designed to compile without forcing CUDA or OpenCV when those libraries are not yet needed by the active code path.
 
 ```mermaid
 flowchart TD
     START[Configure CMake] --> ZMQ{ZeroMQ enabled?}
-    ZMQ -- No --> MOCK[Build local mock mode]
-    ZMQ -- Yes --> BUS[Bind publisher and subscriber sockets]
+    ZMQ -- No --> MOCK[Build standalone fallback mode]
+    ZMQ -- Yes --> BUS[Enable upstream and downstream ZeroMQ sockets]
     BUS --> CUDA{CUDA enabled?}
     CUDA -- Yes --> CUDART[Link CUDA runtime]
     CUDA -- No --> SKIPCUDA[Skip CUDA linkage]
@@ -103,9 +109,16 @@ flowchart TD
     CVLINK --> DONE
 ```
 
-## Recommended Near-Term Next Steps
+## Design Notes
 
-1. Reemplazar el score sintético por un buffer real de dos frames y una magnitud temporal calculada sobre memoria fijada.
-2. Definir el contrato upstream desde `#3` con un envelope estable y documentado.
-3. Añadir un benchmark reproducible de tasa de eventos emitidos vs. frames descartados.
-4. Versionar explícitamente el contrato binario para evitar drift con `#2`.
+- The node emits binary payloads instead of JSON in the hot path.
+- The fallback ingest is deterministic so that dry-run behavior is reproducible.
+- Geometry validation happens before a frame envelope is accepted into the event path.
+- The current temporal-energy stage is a deterministic surrogate, not yet the final CUDA derivative kernel.
+
+## Recommended Next Steps
+
+1. Replace the deterministic surrogate with a true two-frame derivative kernel backed by pinned memory.
+2. Version the upstream envelope contract explicitly so the interface with [low-latency-video-stream-orchestrator](https://github.com/Industrial-Edge-Labs/low-latency-video-stream-orchestrator) cannot drift silently.
+3. Add a benchmark that reports discarded frames versus emitted events under fixed load.
+4. Add a versioned event schema shared with [real-time-vision-decision-system](https://github.com/Industrial-Edge-Labs/real-time-vision-decision-system).
