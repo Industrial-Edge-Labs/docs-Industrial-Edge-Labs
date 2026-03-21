@@ -49,10 +49,10 @@ flowchart TD
 ### 2.1 The Perception and Intake Pipeline
 - **[`low-latency-video-stream-orchestrator`](https://github.com/Industrial-Edge-Labs/low-latency-video-stream-orchestrator)**: Ingests massive bandwidth matrices. Optimized with lock-free queues and fixed-width upstream envelopes for the perception path. Node-specific documentation: [low-latency-video-stream-orchestrator/architecture.md](./low-latency-video-stream-orchestrator/architecture.md).
 - **[`event-driven-vision-processing-engine`](https://github.com/Industrial-Edge-Labs/event-driven-vision-processing-engine)**: Drops redundant static frames. Computes temporal gradients ($dV/dt$) and generates spatial events ("Object $X$ breached Zone $Y$ at $t_n$"). Node-specific documentation: [event-driven-vision-processing-engine/architecture.md](./event-driven-vision-processing-engine/architecture.md).
-- **`industrial-visual-inspection-engine`**: Deep anomaly detection utilizing Vision Transformers (ViT) or YOLO-style single-shot detectors compiled to TensorRT. Runs in parallel to the main sequence, producing confidence interval scores $C \in [0, 1]$.
+- **[`industrial-visual-inspection-engine`](https://github.com/Industrial-Edge-Labs/industrial-visual-inspection-engine)**: Deep anomaly detection utilizing TensorRT or PyTorch-backed inspection graphs. Runs in parallel to the main sequence and emits compact anomaly payloads. Node-specific documentation: [industrial-visual-inspection-engine/architecture.md](./industrial-visual-inspection-engine/architecture.md).
 
 ### 2.2 The Deterministic Core
-- **`real-time-vision-decision-system`**: Takes semantic output from the perception graphs and evaluates Hard-Real-Time (HRT) logic maps. It uses an internal finite state machine (FSM).
+- **[`real-time-vision-decision-system`](https://github.com/Industrial-Edge-Labs/real-time-vision-decision-system)**: Takes semantic output from the perception graphs and evaluates Hard-Real-Time (HRT) logic maps. It uses an internal finite state machine (FSM). Node-specific documentation: [real-time-vision-decision-system/architecture.md](./real-time-vision-decision-system/architecture.md).
 - **`edge-ai-system-orchestrator`**: The monolithic orchestrator. Implemented using CPU pinning, thread isolation, and bypasses kernel networking (via DPDK) where possible to maintain standard deviations of latency under $10\mu s$.
 
 ### 2.3 The Infrastructure, Feedback & WebGL Systems

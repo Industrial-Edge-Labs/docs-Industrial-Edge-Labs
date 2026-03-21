@@ -31,7 +31,7 @@ This document defines the intended upstream and downstream compatibility contrac
 
 1. `UpstreamFrameEnvelope`: `timestamp_ns`, `frame_id`, `width`, `height`, `channels`
 2. `InferencePayload`: `timestamp`, `object_id`, `confidence`, `x`, `y`, `dx`, `dy`
-3. `InspectionAnomalyPayload`: to be standardized when aligning [industrial-visual-inspection-engine](https://github.com/Industrial-Edge-Labs/industrial-visual-inspection-engine)
+3. `InspectionAnomalyPayload`: `timestamp_ns`, `frame_id`, `confidence`, `x`, `y`, `width`, `height`, `class_id`
 4. `FsmPayload`: `timestamp`, `current_state`
 5. `ControlConfig`: control-plane-to-orchestrator configuration block
 
