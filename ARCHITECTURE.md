@@ -26,13 +26,14 @@ flowchart TD
     end
 
     subgraph OBSERVE ["4. Telemetry & Observability Layer (Go / TS)"]
-        ORCH -. "eBPF / gRPC Metrics" .-> EOP[edge-event-observability-platform]
+        RTD -. "FsmPayload / ZeroMQ SUB" .-> EOP[edge-event-observability-platform]
+        VIE -. "InspectionAnomalyPayload / ZeroMQ SUB" .-> EOP
         VPE -. "Lossy Vision Telemetry" .-> MLOPS[industrial-mlops-data-lake-pipeline]
     end
 
     subgraph CONTROL_PLANE ["5. Visualization & Fleet Layer (React / WebGL)"]
-        EOP -- "WebSockets (60Hz)" --> TWIN[industrial-digital-twin-dashboard]
-        EOP -- "REST API" --> VOCP[vision-operations-control-plane]
+        EOP -- "Telemetry Snapshot HTTP API" --> TWIN[industrial-digital-twin-dashboard]
+        EOP -- "Telemetry Snapshot HTTP API" --> VOCP[vision-operations-control-plane]
         VOCP -- "ControlConfig / ZeroMQ REQ-REP" --> ORCH
         VOCP -- "Zero-Trust TLS / OTA" --> FLEET[edge-device-fleet-manager]
     end
@@ -58,7 +59,7 @@ flowchart TD
 
 ### 2.3 The Infrastructure, Feedback & WebGL Systems
 - **[`vision-operations-control-plane`](https://github.com/Industrial-Edge-Labs/vision-operations-control-plane)**: Operator-facing HTTP gateway that encodes `ControlConfig` for the orchestrator and proxies fleet-facing reads. Node-specific documentation: [vision-operations-control-plane/architecture.md](./vision-operations-control-plane/architecture.md).
-- **`edge-event-observability-platform`**: Time-series database optimized for high-write-throughput (LSM trees). Captures everything from application-level events to PCIe bus latency spikes.
+- **[`edge-event-observability-platform`](https://github.com/Industrial-Edge-Labs/edge-event-observability-platform)**: Passive telemetry bridge that converts canonical binary streams into Prometheus metrics and an HTTP snapshot surface. Node-specific documentation: [edge-event-observability-platform/architecture.md](./edge-event-observability-platform/architecture.md).
 - **`industrial-digital-twin-dashboard`**: A React/Three.js Application that interpolates incoming 60Hz telemetry into a smooth 144Hz 3D environment, utilizing WebWorker pools to decouple network parsing from the rendering thread.
 - **`industrial-mlops-data-lake-pipeline`**: Automatically ingests low-confidence frames ($C < 0.6$) and feeds them to cloud instances for Active Learning.
 - **`edge-device-fleet-manager`**: Orchestrates container lifecycles via Kubernetes (K3s) or custom binaries across hundreds of NVIDIA Jetson / IPC edge nodes.
