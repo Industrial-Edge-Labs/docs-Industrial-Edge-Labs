@@ -6,6 +6,8 @@ This document describes the external architecture of the [real-time-vision-decis
 
 The node is the deterministic convergence point for the early perception branch. It ingests motion events from [event-driven-vision-processing-engine](https://github.com/Industrial-Edge-Labs/event-driven-vision-processing-engine) and inspection anomalies from [industrial-visual-inspection-engine](https://github.com/Industrial-Edge-Labs/industrial-visual-inspection-engine), then emits FSM state transitions to [edge-ai-system-orchestrator](https://github.com/Industrial-Edge-Labs/edge-ai-system-orchestrator).
 
+The repository supports both a ZeroMQ-enabled live topology and a portable dry-run mode that exercises both input branches without external dependencies.
+
 ## Position In The Flow
 
 ```mermaid
@@ -76,9 +78,39 @@ classDiagram
     }
 ```
 
+By default the output is published on `tcp://127.0.0.1:5556`, which matches [edge-ai-system-orchestrator](https://github.com/Industrial-Edge-Labs/edge-ai-system-orchestrator).
+
+## Runtime Modes
+
+```mermaid
+flowchart TD
+    Start[Process start] --> Mode{Dry-run?}
+    Mode -->|Yes| Synthetic[Generate synthetic vision and inspection inputs]
+    Mode -->|No| Live[Poll ZeroMQ subscribers]
+    Synthetic --> Validate[Validate payload contracts]
+    Live --> Validate
+    Validate --> FSM[Evaluate finite state machine]
+    FSM --> Publish{State publication enabled?}
+    Publish -->|Yes| Out[Publish FsmPayload to orchestrator]
+    Publish -->|No| Local[Keep transitions local]
+```
+
+## State Progression
+
+```mermaid
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE --> PERIMETER_BREACH: vision motion threshold crossed
+    PERIMETER_BREACH --> AUTHORIZATION_PENDING: sustained motion or moderate inspection anomaly
+    AUTHORIZATION_PENDING --> EMERGENCY_HALT: severe anomaly or emergency motion event
+    PERIMETER_BREACH --> EMERGENCY_HALT: severe anomaly
+    EMERGENCY_HALT --> EMERGENCY_HALT: latched stop
+```
+
 ## Design Notes
 
 - The runtime treats the inspection branch as an explicit contract, not as a generic byte trigger.
+- The runtime validates payload semantics, not only payload size, before evaluating transitions.
 - FSM state publication now follows the same state transitions stored internally.
 - The default build remains portable without requiring ZeroMQ on the local machine.
 - The ZeroMQ-enabled build preserves the live integration topology used by the rest of the system.
