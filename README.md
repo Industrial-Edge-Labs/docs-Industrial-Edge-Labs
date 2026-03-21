@@ -2,6 +2,8 @@
 
 Welcome to the centralized documentation cluster for the **Industrial Edge Labs** ecosystem. This nexus details the topological synchronization of 13 independent micro-repositories operating collectively to process multi-modal computational vision at the Edge, verify control constraints formally using Temporal Logic, and actuate hard real-time physical mechanisms.
 
+See also: [Compatibility Matrix](./COMPATIBILITY_MATRIX.md)
+
 ## Ecosystem Network Topology (ZeroMQ DAG)
 
 ```mermaid

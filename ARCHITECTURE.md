@@ -47,7 +47,7 @@ flowchart TD
 ## 2. Core Operational Modules (Deep Dive)
 
 ### 2.1 The Perception and Intake Pipeline
-- **`low-latency-video-stream-orchestrator`**: Ingests massive bandwidth matrices. Optimized with `epoll`, lock-free Queues, and hardware-accelerated video decoding (NVDEC). Ensures $O(1)$ routing complexity.
+- **[`low-latency-video-stream-orchestrator`](https://github.com/Industrial-Edge-Labs/low-latency-video-stream-orchestrator)**: Ingests massive bandwidth matrices. Optimized with lock-free queues and fixed-width upstream envelopes for the perception path. Node-specific documentation: [low-latency-video-stream-orchestrator/architecture.md](./low-latency-video-stream-orchestrator/architecture.md).
 - **[`event-driven-vision-processing-engine`](https://github.com/Industrial-Edge-Labs/event-driven-vision-processing-engine)**: Drops redundant static frames. Computes temporal gradients ($dV/dt$) and generates spatial events ("Object $X$ breached Zone $Y$ at $t_n$"). Node-specific documentation: [event-driven-vision-processing-engine/architecture.md](./event-driven-vision-processing-engine/architecture.md).
 - **`industrial-visual-inspection-engine`**: Deep anomaly detection utilizing Vision Transformers (ViT) or YOLO-style single-shot detectors compiled to TensorRT. Runs in parallel to the main sequence, producing confidence interval scores $C \in [0, 1]$.
 
