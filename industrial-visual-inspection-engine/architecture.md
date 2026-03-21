@@ -6,6 +6,8 @@ This document describes the external architecture of the [industrial-visual-insp
 
 The node is the inspection-side GPU inference branch of the vision path. It consumes the canonical upstream frame envelope published by [low-latency-video-stream-orchestrator](https://github.com/Industrial-Edge-Labs/low-latency-video-stream-orchestrator) and emits a compact anomaly payload for [real-time-vision-decision-system](https://github.com/Industrial-Edge-Labs/real-time-vision-decision-system).
 
+The repository supports both a production-style CUDA-enforced runtime and a portable dry-run mode so the binary contract can be validated on development machines before the GPU stack is present.
+
 ## Position In The Flow
 
 ```mermaid
@@ -80,9 +82,28 @@ classDiagram
 ## Design Notes
 
 - The current detector is still a deterministic surrogate around the payload contract.
-- The runtime validates payload size before decoding upstream messages.
+- The runtime validates payload size, frame dimensions, channel counts, confidence ranges, and anomaly bounds before publication.
 - The runtime publishes a dedicated anomaly payload instead of replaying the upstream frame header.
 - The downstream decision node can therefore distinguish inspection anomalies from standard motion events.
+- The default runtime is portable; `--require-cuda` upgrades the startup path to a strict GPU requirement.
+
+## Runtime Modes
+
+```mermaid
+flowchart TD
+    Start[Process start] --> Check{Require CUDA?}
+    Check -->|Yes| GPU[Validate CUDA runtime]
+    Check -->|No| Portable[Allow portable detector backend]
+    GPU --> Input{Dry-run?}
+    Portable --> Input
+    Input -->|Yes| Synthetic[Generate synthetic canonical envelopes]
+    Input -->|No| ZMQ[Subscribe to upstream ZeroMQ input]
+    Synthetic --> Inspect[Evaluate inspection surrogate]
+    ZMQ --> Inspect
+    Inspect --> Output{Publish enabled?}
+    Output -->|Yes| Publish[Publish InspectionAnomalyPayload]
+    Output -->|No| Local[Log local anomaly result]
+```
 
 ## Recommended Next Steps
 
