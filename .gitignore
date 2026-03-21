@@ -1,0 +1,35 @@
+﻿# General
+build/
+Build/
+out/
+bin/
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# C++ / CMake
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Rust
+target/
+Cargo.lock
+
+# Go
+*.out
+
+# OS
+.DS_Store
