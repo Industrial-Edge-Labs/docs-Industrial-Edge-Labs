@@ -82,6 +82,8 @@ The dry-run mode keeps the repository buildable on a workstation without ZeroMQ 
 - The contract is binary and fixed-width to avoid text parsing in the hot path.
 - The publish thread drains the queue with bounded waiting instead of indefinite hot spinning.
 - Dropped frames are counted explicitly when the queue is full.
+- The binary entrypoint is intentionally thin so the ingest pipeline can be tested without booting the full process.
+- Configuration parsing is isolated from the runtime loop so CLI and environment defaults remain stable.
 
 ## Recommended Next Steps
 
