@@ -64,7 +64,7 @@ flowchart TD
 - **[`edge-device-fleet-manager`](https://github.com/Industrial-Edge-Labs/edge-device-fleet-manager)**: Deployment inventory and OTA manifest service that persists node heartbeats and publishes rollout metadata. Node-specific documentation: [edge-device-fleet-manager/architecture.md](./edge-device-fleet-manager/architecture.md).
 - **[`edge-event-observability-platform`](https://github.com/Industrial-Edge-Labs/edge-event-observability-platform)**: Passive telemetry bridge that converts canonical binary streams into Prometheus metrics and an HTTP snapshot surface. Node-specific documentation: [edge-event-observability-platform/architecture.md](./edge-event-observability-platform/architecture.md).
 - **[`industrial-digital-twin-dashboard`](https://github.com/Industrial-Edge-Labs/industrial-digital-twin-dashboard)**: Operator-facing WebGL dashboard with a local relay that polls observability snapshots and republishes them to the browser over Socket.IO. Node-specific documentation: [industrial-digital-twin-dashboard/architecture.md](./industrial-digital-twin-dashboard/architecture.md).
-- **[`industrial-mlops-data-lake-pipeline`](https://github.com/Industrial-Edge-Labs/industrial-mlops-data-lake-pipeline)**: Automatically ingests low-confidence frames ($C < 0.6$) and feeds them to cloud instances for Active Learning.
+- **[`industrial-mlops-data-lake-pipeline`](https://github.com/Industrial-Edge-Labs/industrial-mlops-data-lake-pipeline)**: Ingests anomaly evidence, persists a retraining corpus, and publishes canonical OTA manifests for fleet rollout. Node-specific documentation: [industrial-mlops-data-lake-pipeline/architecture.md](./industrial-mlops-data-lake-pipeline/architecture.md).
 
 ## 3. Deployment Constraints
 
