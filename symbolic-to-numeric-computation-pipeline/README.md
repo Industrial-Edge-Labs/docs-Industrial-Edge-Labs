@@ -21,9 +21,13 @@ This node generates deterministic numerical solver artifacts from canonical symb
 - Python generation: `python src/transpiler.py --output-dir out`
 - CMake validation build: `cmake -S . -B build-default && cmake --build build-default --config Release`
 - Demo execution: `./build-default/Release/symbolic_kernel_demo 24 0.01`
+- Python tests: `python -m unittest discover -s tests -p "test_*.py"`
+- C++ tests: `ctest --test-dir build-default --output-on-failure -C Release`
 
 ## Design Notes
 
 - The emitted solver is deterministic and allocation-free.
 - The manifest exists so downstream repositories can validate artifact shape before inclusion.
 - The build graph regenerates the header automatically through CMake before compiling the demo consumer.
+- The transpiler is split into CLI, model, artifact, and generator modules so the emitted contract can stay stable while internals evolve.
+- The demo consumer is split into runtime parsing and simulation modules so the generated kernel path is locally testable.

@@ -9,16 +9,22 @@
 ```mermaid
 flowchart LR
     SYM[SymPy symbolic model]
-    TP[transpiler.py]
+    CLI[CLI parser]
+    MODEL[Model resolver]
+    GEN[Artifact generator]
     HPP[FastRK4.hpp]
     MANIFEST[kernel_manifest.json]
+    DEMO[Demo runtime modules]
     MP[multi-physics-simulation-and-control-system]
 
-    SYM --> TP
-    TP --> HPP
-    TP --> MANIFEST
+    SYM --> MODEL
+    CLI --> GEN
+    MODEL --> GEN
+    GEN --> HPP
+    GEN --> MANIFEST
     HPP --> MP
     MANIFEST --> MP
+    HPP --> DEMO
 ```
 
 ## Contract Details
@@ -44,4 +50,5 @@ flowchart LR
 
 - The current canonical model is a non-linear mass-spring-damper system with drag.
 - The CMake graph regenerates the artifacts before compiling the demo consumer.
+- The repository includes Python unit tests for artifact generation and C++ tests for the generated demo path.
 - Downstream systems should treat the generated header and manifest as the stable boundary of this repository.
